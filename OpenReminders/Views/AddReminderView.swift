@@ -1,6 +1,6 @@
 //
 //  AddReminderView.swift
-//  QuickReminders
+//  OpenReminders
 
 import SwiftUI
 import SwiftData
@@ -53,7 +53,11 @@ struct AddReminderView: View {
                         context.insert(newReminder)
                         
                         if(isRemindEnabled) {
-                            scheduleNotification(at: date)
+                            NotificationService.shared.scheduleNotification(
+                                title: title,
+                                body: note,
+                                date: date
+                            )
                         }
                         
                         do {
@@ -68,53 +72,6 @@ struct AddReminderView: View {
             }
         }
         .scrollDismissesKeyboard(.interactively)
-    }
-    
-    func requestNotificationPermission() async {
-        let center = UNUserNotificationCenter.current()
-        
-        do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
-            
-            if(granted) {
-                notificationsAllowed = true
-            } else {
-                notificationsAllowed = false
-            }
-        } catch {
-            print("Permission request failed: \(error)")
-        }
-    }
-    
-    func scheduleNotification(at date: Date) {
-        let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = note
-            content.sound = .default
-        
-        let dateComponents = Calendar.current.dateComponents(
-            [.year, .month, .day, .hour, .minute, .second],
-            from: date
-        )
-        
-        let trigger = UNCalendarNotificationTrigger(
-            dateMatching: dateComponents,
-            repeats: false,
-        )
-        
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
-            content: content,
-            trigger: trigger
-        )
-        
-        UNUserNotificationCenter.current().add(request) {error in
-            if let error {
-                print("Failed to add request: \(error)")
-            } else {
-                print("Notification added")
-            }
-        }
     }
     
     var contentSnack: some View {
@@ -138,7 +95,7 @@ struct AddReminderView: View {
                 .onChange(of: isRemindEnabled) { oldValue, newValue in
                     if newValue {
                         Task {
-                            await requestNotificationPermission()
+                            await notificationsAllowed =  NotificationService.shared.requestNotificationPermission()
                         }
                     }
                 }

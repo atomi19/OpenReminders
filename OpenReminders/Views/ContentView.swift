@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  QuickReminders
+//  OpenReminders
 
 import SwiftUI
 import SwiftData
@@ -100,6 +100,9 @@ struct ReminderRow: View {
                 }
             }
         }
+        .sheet(isPresented: $isShowingEditSheet, content: {
+            EditReminderView(reminder: reminder)
+        })
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) {
                 context.delete(reminder)
@@ -110,6 +113,10 @@ struct ReminderRow: View {
                     print(error)
                 }
             }
+            Button("Edit", systemImage: "pencil") {
+                isShowingEditSheet = true
+            }
+            .tint(.orange)
         }
     }
 }

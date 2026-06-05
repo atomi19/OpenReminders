@@ -1,9 +1,6 @@
 //
 //  OpenRemindersApp.swift
 //  OpenReminders
-//
-//  Created by Anton on 04.06.2026.
-//
 
 import SwiftUI
 import SwiftData
