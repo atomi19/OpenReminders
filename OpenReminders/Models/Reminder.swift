@@ -1,6 +1,6 @@
 //
 //  ReminderModel.swift
-//  QuickReminders
+//  OpenReminders
 
 import Foundation
 import SwiftData

@@ -10,6 +10,7 @@ struct ContentView: View {
     private var reminders: [Reminder]
     
     @State private var isShowingAddSheet = false
+    @State private var searchText = ""
     
     @Environment(\.modelContext) private var context
     
@@ -17,21 +18,37 @@ struct ContentView: View {
         let remindersWithoutDate = reminders.filter {$0.dateReminder == nil}
         let remindersWithDate = reminders.filter {$0.dateReminder != nil}
         
+        var filteredRemindersWithDate: [Reminder] {
+            guard !searchText.isEmpty else { return remindersWithDate }
+            return remindersWithDate.filter {
+                $0.title.localizedCaseInsensitiveContains(searchText) ||
+                $0.note.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        var filteredRemindersWithoutDate: [Reminder] {
+            guard !searchText.isEmpty else { return remindersWithoutDate }
+            return remindersWithoutDate.filter {
+                $0.title.localizedCaseInsensitiveContains(searchText) ||
+                $0.note.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
         NavigationStack {
             List {
                 // reminders without date
-                if !remindersWithoutDate.isEmpty {
+                if !filteredRemindersWithoutDate.isEmpty {
                     Section ("No Date") {
-                        ForEach(remindersWithoutDate) { reminder in
+                        ForEach(filteredRemindersWithoutDate) { reminder in
                             ReminderRow(reminder: reminder)
                         }
                     }
                 }
                 
                 // reminders with date
-                if !remindersWithDate.isEmpty {
+                if !filteredRemindersWithDate.isEmpty {
                     Section("Scheduled") {
-                        ForEach(remindersWithDate) { reminder in
+                        ForEach(filteredRemindersWithDate) { reminder in
                             ReminderRow(reminder: reminder)
                         }
                     }
@@ -44,12 +61,24 @@ struct ContentView: View {
                     } description: {
                         Text("Add reminders and they will appear here")
                     }
+                } else if !searchText.isEmpty &&
+                            filteredRemindersWithDate.isEmpty &&
+                            filteredRemindersWithoutDate.isEmpty {
+                    ContentUnavailableView {
+                        Label("No reminders found", systemImage: "magnifyingglass")
+                    } description: {
+                        Text("Try searching by note or title")
+                    }
                 }
             }
             .sheet(isPresented: $isShowingAddSheet) {
                 AddReminderView()
             }
-            .navigationTitle("QuickReminders")
+            .navigationTitle("OpenReminders")
+            .searchable(
+                text: $searchText,
+                prompt: "Search"
+            )
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
                     Spacer()
