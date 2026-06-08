@@ -15,43 +15,61 @@ struct ContentView: View {
     @Environment(\.modelContext) private var context
     
     var body: some View {
-        let remindersWithoutDate = reminders.filter {$0.dateReminder == nil}
-        let remindersWithDate = reminders.filter {$0.dateReminder != nil}
-        
-        var filteredRemindersWithDate: [Reminder] {
-            guard !searchText.isEmpty else { return remindersWithDate }
-            return remindersWithDate.filter {
-                $0.title.localizedCaseInsensitiveContains(searchText) ||
-                $0.note.localizedCaseInsensitiveContains(searchText)
-            }
+        let overdueReminders = reminders.filter {
+            guard let date = $0.dateReminder else {return false}
+            return date < Date()
         }
         
-        var filteredRemindersWithoutDate: [Reminder] {
-            guard !searchText.isEmpty else { return remindersWithoutDate }
-            return remindersWithoutDate.filter {
-                $0.title.localizedCaseInsensitiveContains(searchText) ||
-                $0.note.localizedCaseInsensitiveContains(searchText)
-            }
+        let remindersToday = reminders.filter {
+            guard let date = $0.dateReminder else {return false}
+            return Calendar.current.isDateInToday(date) && !$0.isDone && date > Date()
+        }
+        
+        let remindersTomorrow = reminders.filter {
+            guard let date = $0.dateReminder else {return false}
+            return Calendar.current.isDateInTomorrow(date) && !$0.isDone
+        }
+        
+        let upcomingReminders = reminders.filter{
+            guard let date = $0.dateReminder else {return false}
+            return date > Date() &&
+            !Calendar.current.isDateInToday(date) &&
+            !Calendar.current.isDateInTomorrow(date) &&
+            !$0.isDone
+        }
+        
+        let remindersWithoutDate = reminders.filter {
+            $0.dateReminder == nil && !$0.isDone
+        }
+        
+        let completeReminders = reminders.filter {$0.isDone}
+        
+        let sectionGroups: [RemindersSectionGroup] = [
+            RemindersSectionGroup(title: "Overdue", remindersList: overdueReminders),
+            RemindersSectionGroup(title: "Today", remindersList: remindersToday),
+            RemindersSectionGroup(title: "Tomorrow", remindersList: remindersTomorrow),
+            RemindersSectionGroup(title: "Upcoming", remindersList: upcomingReminders),
+            RemindersSectionGroup(title: "No Date", remindersList: remindersWithoutDate),
+            RemindersSectionGroup(title: "Completed", remindersList: completeReminders)
+        ]
+        
+        var filteredSectionGroup: [RemindersSectionGroup] {
+            sectionGroups
+                .map {
+                    RemindersSectionGroup(
+                        title: $0.title,
+                        remindersList: filteredReminders(remindersList: filteredReminders(remindersList: $0.remindersList))
+                    )
+                }
         }
         
         NavigationStack {
             List {
-                // reminders without date
-                if !filteredRemindersWithoutDate.isEmpty {
-                    Section ("No Date") {
-                        ForEach(filteredRemindersWithoutDate) { reminder in
-                            ReminderRow(reminder: reminder)
-                        }
-                    }
-                }
-                
-                // reminders with date
-                if !filteredRemindersWithDate.isEmpty {
-                    Section("Scheduled") {
-                        ForEach(filteredRemindersWithDate) { reminder in
-                            ReminderRow(reminder: reminder)
-                        }
-                    }
+                ForEach(filteredSectionGroup) { group in
+                    ReminderSection(
+                        sectionTitle: group.title,
+                        remindersList: group.remindersList
+                    )
                 }
             }
             .overlay {
@@ -62,8 +80,13 @@ struct ContentView: View {
                         Text("Add reminders and they will appear here")
                     }
                 } else if !searchText.isEmpty &&
-                            filteredRemindersWithDate.isEmpty &&
-                            filteredRemindersWithoutDate.isEmpty {
+                            filteredReminders(remindersList: overdueReminders).isEmpty &&
+                            filteredReminders(remindersList: remindersToday).isEmpty &&
+                            filteredReminders(remindersList: remindersTomorrow).isEmpty &&
+                            filteredReminders(remindersList: upcomingReminders).isEmpty &&
+                            filteredReminders(remindersList: remindersWithoutDate).isEmpty &&
+                            filteredReminders(remindersList: completeReminders).isEmpty
+                {
                     ContentUnavailableView {
                         Label("No reminders found", systemImage: "magnifyingglass")
                     } description: {
@@ -86,6 +109,37 @@ struct ContentView: View {
                         isShowingAddSheet.toggle()
                     }
                     .buttonStyle(.borderedProminent)
+                }
+            }
+        }
+    }
+    
+    // search reminders in through given reminders
+    func filteredReminders(remindersList: [Reminder]) -> [Reminder] {
+        guard !searchText.isEmpty else {return remindersList}
+        
+        return remindersList.filter {
+            $0.title.localizedCaseInsensitiveContains(searchText) ||
+            $0.note.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+}
+
+struct RemindersSectionGroup: Identifiable {
+    let id = UUID()
+    var title: String
+    var remindersList: [Reminder]
+}
+
+struct ReminderSection: View {
+    var sectionTitle: String
+    var remindersList: [Reminder]
+    
+    var body: some View {
+        if !remindersList.isEmpty {
+            Section(sectionTitle) {
+                ForEach(remindersList) { reminder in
+                    ReminderRow(reminder: reminder)
                 }
             }
         }

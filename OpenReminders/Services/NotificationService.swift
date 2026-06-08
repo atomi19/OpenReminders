@@ -16,7 +16,6 @@ class NotificationService {
         }
     }
     
-    // at date: Date
     func scheduleNotification(
         title: String,
         body: String,
