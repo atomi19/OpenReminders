@@ -14,43 +14,56 @@ struct ContentView: View {
     
     @Environment(\.modelContext) private var context
     
-    var body: some View {
-        let overdueReminders = reminders.filter {
+    let now = Date()
+    let calendar = Calendar.current
+    
+    var overdue: [Reminder] {
+        reminders.filter {
             guard let date = $0.dateReminder else {return false}
-            return date < Date()
+            return date < now && !$0.isDone
         }
-        
-        let remindersToday = reminders.filter {
+    }
+    
+    var today: [Reminder] {
+        reminders.filter {
             guard let date = $0.dateReminder else {return false}
-            return Calendar.current.isDateInToday(date) && !$0.isDone && date > Date()
+            return calendar.isDateInToday(date) && !$0.isDone && date > now
         }
-        
-        let remindersTomorrow = reminders.filter {
+    }
+    
+    var tomorrow: [Reminder] {
+        reminders.filter {
             guard let date = $0.dateReminder else {return false}
-            return Calendar.current.isDateInTomorrow(date) && !$0.isDone
+            return calendar.isDateInTomorrow(date) && !$0.isDone
         }
-        
-        let upcomingReminders = reminders.filter{
+    }
+    
+    var upcoming: [Reminder] {
+        reminders.filter {
             guard let date = $0.dateReminder else {return false}
-            return date > Date() &&
-            !Calendar.current.isDateInToday(date) &&
-            !Calendar.current.isDateInTomorrow(date) &&
+            return date > now &&
+            !calendar.isDateInToday(date) &&
+            !calendar.isDateInTomorrow(date) &&
             !$0.isDone
         }
-        
-        let remindersWithoutDate = reminders.filter {
-            $0.dateReminder == nil && !$0.isDone
-        }
-        
-        let completeReminders = reminders.filter {$0.isDone}
-        
+    }
+    
+    var withoutDate: [Reminder] {
+        reminders.filter { $0.dateReminder == nil && !$0.isDone }
+    }
+    
+    var completed: [Reminder] {
+        reminders.filter { $0.isDone }
+    }
+    
+    var body: some View {
         let sectionGroups: [RemindersSectionGroup] = [
-            RemindersSectionGroup(title: "Overdue", remindersList: overdueReminders),
-            RemindersSectionGroup(title: "Today", remindersList: remindersToday),
-            RemindersSectionGroup(title: "Tomorrow", remindersList: remindersTomorrow),
-            RemindersSectionGroup(title: "Upcoming", remindersList: upcomingReminders),
-            RemindersSectionGroup(title: "No Date", remindersList: remindersWithoutDate),
-            RemindersSectionGroup(title: "Completed", remindersList: completeReminders)
+            RemindersSectionGroup(title: "Overdue", remindersList: overdue),
+            RemindersSectionGroup(title: "Today", remindersList: today),
+            RemindersSectionGroup(title: "Tomorrow", remindersList: tomorrow),
+            RemindersSectionGroup(title: "Upcoming", remindersList: upcoming),
+            RemindersSectionGroup(title: "No Date", remindersList: withoutDate),
+            RemindersSectionGroup(title: "Completed", remindersList: completed)
         ]
         
         var filteredSectionGroup: [RemindersSectionGroup] {
@@ -80,12 +93,12 @@ struct ContentView: View {
                         Text("Add reminders and they will appear here")
                     }
                 } else if !searchText.isEmpty &&
-                            filteredReminders(remindersList: overdueReminders).isEmpty &&
-                            filteredReminders(remindersList: remindersToday).isEmpty &&
-                            filteredReminders(remindersList: remindersTomorrow).isEmpty &&
-                            filteredReminders(remindersList: upcomingReminders).isEmpty &&
-                            filteredReminders(remindersList: remindersWithoutDate).isEmpty &&
-                            filteredReminders(remindersList: completeReminders).isEmpty
+                            filteredReminders(remindersList: overdue).isEmpty &&
+                            filteredReminders(remindersList: today).isEmpty &&
+                            filteredReminders(remindersList: tomorrow).isEmpty &&
+                            filteredReminders(remindersList: upcoming).isEmpty &&
+                            filteredReminders(remindersList: withoutDate).isEmpty &&
+                            filteredReminders(remindersList: completed).isEmpty
                 {
                     ContentUnavailableView {
                         Label("No reminders found", systemImage: "magnifyingglass")
