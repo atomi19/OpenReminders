@@ -58,12 +58,12 @@ struct ContentView: View {
     
     var body: some View {
         let sectionGroups: [RemindersSectionGroup] = [
-            RemindersSectionGroup(title: "Overdue", remindersList: overdue),
-            RemindersSectionGroup(title: "Today", remindersList: today),
-            RemindersSectionGroup(title: "Tomorrow", remindersList: tomorrow),
-            RemindersSectionGroup(title: "Upcoming", remindersList: upcoming),
-            RemindersSectionGroup(title: "No Date", remindersList: withoutDate),
-            RemindersSectionGroup(title: "Completed", remindersList: completed)
+            RemindersSectionGroup(title: "Overdue", remindersList: overdue, isExpandable: false),
+            RemindersSectionGroup(title: "Today", remindersList: today, isExpandable: false),
+            RemindersSectionGroup(title: "Tomorrow", remindersList: tomorrow, isExpandable: false),
+            RemindersSectionGroup(title: "Upcoming", remindersList: upcoming, isExpandable: false),
+            RemindersSectionGroup(title: "No Date", remindersList: withoutDate, isExpandable: false),
+            RemindersSectionGroup(title: "Completed", remindersList: completed, isExpandable: true)
         ]
         
         var filteredSectionGroup: [RemindersSectionGroup] {
@@ -71,7 +71,8 @@ struct ContentView: View {
                 .map {
                     RemindersSectionGroup(
                         title: $0.title,
-                        remindersList: filteredReminders(remindersList: filteredReminders(remindersList: $0.remindersList))
+                        remindersList: filteredReminders(remindersList: filteredReminders(remindersList: $0.remindersList)),
+                        isExpandable: $0.isExpandable
                     )
                 }
         }
@@ -81,10 +82,12 @@ struct ContentView: View {
                 ForEach(filteredSectionGroup) { group in
                     ReminderSection(
                         sectionTitle: group.title,
-                        remindersList: group.remindersList
+                        remindersList: group.remindersList,
+                        isExpandable: group.isExpandable
                     )
                 }
             }
+            .listStyle(.sidebar)
             .overlay {
                 if reminders.isEmpty {
                     ContentUnavailableView {
@@ -142,17 +145,29 @@ struct RemindersSectionGroup: Identifiable {
     let id = UUID()
     var title: String
     var remindersList: [Reminder]
+    var isExpandable: Bool
 }
 
 struct ReminderSection: View {
     var sectionTitle: String
     var remindersList: [Reminder]
+    var isExpandable: Bool
+    
+    @State private var isExpanded: Bool = false
     
     var body: some View {
         if !remindersList.isEmpty {
-            Section(sectionTitle) {
-                ForEach(remindersList) { reminder in
-                    ReminderRow(reminder: reminder)
+            if isExpandable {
+                Section("\(sectionTitle) (\(remindersList.count))", isExpanded: $isExpanded) {
+                    ForEach(remindersList) { reminder in
+                        ReminderRow(reminder: reminder)
+                    }
+                }
+            } else {
+                Section("\(sectionTitle) (\(remindersList.count))") {
+                    ForEach(remindersList) { reminder in
+                        ReminderRow(reminder: reminder)
+                    }
                 }
             }
         }

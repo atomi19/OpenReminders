@@ -82,11 +82,14 @@ struct ReminderFormView: View {
             }
             
             Section("Date & Time") {
-                Toggle(
-                    "Remind",
-                    systemImage: "calendar",
-                    isOn: $isRemindEnabled,
-                )
+                Toggle(isOn: $isRemindEnabled) {
+                    Label {
+                        Text("Remind")
+                    } icon: {
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 .onChange(of: isRemindEnabled) { oldValue, newValue in
                     if newValue {
                         Task {
