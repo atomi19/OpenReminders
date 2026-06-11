@@ -177,12 +177,20 @@ struct ReminderSection: View {
 struct ReminderRow: View {
     var reminder: Reminder
     
+    private var isOverdue: Bool {
+        if let date = reminder.dateReminder {
+            return date < Date()
+        } else {
+            return false
+        }
+    }
+    
     @State private var isShowingEditSheet = false
     
     @Environment(\.modelContext) private var context
     
     var body: some View {
-        HStack {
+        HStack(alignment: .top) {
             Image(systemName: reminder.isDone ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(.secondary)
                 .onTapGesture {
@@ -195,13 +203,6 @@ struct ReminderRow: View {
                     }
                 }
             VStack(alignment: .leading) {
-                if reminder.dateReminder != nil {
-                    if let date = reminder.dateReminder {
-                        Text(date.formatted())
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
                 Text(reminder.title)
                     .strikethrough(reminder.isDone)
                 if !reminder.note.isEmpty {
@@ -209,6 +210,15 @@ struct ReminderRow: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                if reminder.dateReminder != nil {
+                    if let date = reminder.dateReminder {
+                        Text(date.formatted())
+                            .font(.subheadline)
+                            .foregroundStyle(isOverdue ? .red : .secondary)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
             }
         }
         .sheet(isPresented: $isShowingEditSheet, content: {
