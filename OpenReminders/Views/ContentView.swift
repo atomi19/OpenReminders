@@ -11,8 +11,10 @@ struct ContentView: View {
     
     @State private var isShowingAddSheet = false
     @State private var searchText = ""
+    @State private var quickAddTextField = ""
     
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     
     let now = Date()
     let calendar = Calendar.current
@@ -87,6 +89,7 @@ struct ContentView: View {
                     )
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
             .listStyle(.sidebar)
             .overlay {
                 if reminders.isEmpty {
@@ -120,9 +123,14 @@ struct ContentView: View {
             )
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
-                    Spacer()
-                    Button("Add", systemImage: "plus") {
-                        isShowingAddSheet.toggle()
+                    TextField("Quick Reminder", text: $quickAddTextField)
+                    Button("Add", systemImage: quickAddTextField.isEmpty ? "plus" : "checkmark") {
+                        if quickAddTextField.isEmpty {
+                            isShowingAddSheet.toggle()
+                        } else {
+                            saveReminder(title: quickAddTextField, note: "", isDone: false, isRemindEnabled: false, date: nil, context: context, dismiss: dismiss)
+                            quickAddTextField = ""
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                 }

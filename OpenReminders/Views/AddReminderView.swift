@@ -26,35 +26,10 @@ struct AddReminderView: View {
             date: $date,
             isRemindEnabled: $isRemindEnabled,
             navigationTitle: "Add Reminder",
-            onConfirm: save
+            onConfirm: {
+                saveReminder(title: title, note: note, isDone: false, isRemindEnabled: isRemindEnabled, date: date, context: context, dismiss: dismiss)
+            }
         )
-    }
-    
-    func save() {
-        let newReminder = Reminder(
-            title: title,
-            note: note,
-            isDone: false,
-            timeStamp: .now,
-            dateReminder: isRemindEnabled ? date : nil,
-        )
-
-        context.insert(newReminder)
-
-        if(isRemindEnabled) {
-            NotificationService.shared.scheduleNotification(
-                title: title,
-                body: note,
-                date: date
-            )
-        }
-
-        do {
-            try context.save()
-        } catch {
-            print(error)
-        }
-        dismiss()
     }
 }
 
