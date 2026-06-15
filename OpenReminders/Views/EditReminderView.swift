@@ -46,6 +46,7 @@ struct EditReminderView: View {
 
         if(isRemindEnabled) {
             NotificationService.shared.scheduleNotification(
+                uuid: reminder.uuid.uuidString,
                 title: title,
                 body: note,
                 date: date

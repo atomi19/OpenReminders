@@ -204,6 +204,23 @@ struct ReminderRow: View {
                 .onTapGesture {
                     reminder.isDone.toggle()
                     
+                    if(reminder.isDone) {
+                        // remove notification (reminder marked as completed)
+                        if reminder.dateReminder != nil {
+                            NotificationService.shared.removeNotification(uuid: reminder.uuid.uuidString)
+                        }
+                    } else {
+                        // add notification back (reminder is not completed)
+                        if let dateReminder = reminder.dateReminder {
+                            NotificationService.shared.scheduleNotification(
+                                uuid: reminder.uuid.uuidString,
+                                title: reminder.title,
+                                body: reminder.note,
+                                date: dateReminder
+                            )
+                        }
+                    }
+                    
                     do {
                         try context.save()
                     } catch {

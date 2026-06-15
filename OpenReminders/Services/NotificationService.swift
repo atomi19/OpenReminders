@@ -17,6 +17,7 @@ class NotificationService {
     }
     
     func scheduleNotification(
+        uuid: String,
         title: String,
         body: String,
         date: Date,
@@ -37,7 +38,7 @@ class NotificationService {
         )
         
         let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
+            identifier: uuid,
             content: content,
             trigger: trigger
         )
@@ -49,5 +50,11 @@ class NotificationService {
                 print("Notification added")
             }
         }
+    }
+    
+    func removeNotification(uuid: String) {
+        let center = UNUserNotificationCenter.current()
+        
+        center.removePendingNotificationRequests(withIdentifiers: [uuid])
     }
 }

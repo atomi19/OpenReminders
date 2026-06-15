@@ -27,6 +27,7 @@ func saveReminder(
 
     if isRemindEnabled, let date = date {
         NotificationService.shared.scheduleNotification(
+            uuid: newReminder.uuid.uuidString,
             title: title,
             body: note,
             date: date
