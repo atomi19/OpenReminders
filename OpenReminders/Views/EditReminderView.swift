@@ -52,12 +52,9 @@ struct EditReminderView: View {
                 date: date
             )
         }
-
-        do {
-            try context.save()
-        } catch {
-            print(error)
-        }
+        
+        saveContext(context: context)
+        
         dismiss()
     }
 }

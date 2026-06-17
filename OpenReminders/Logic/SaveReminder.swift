@@ -21,6 +21,7 @@ func saveReminder(
         isDone: false,
         timeStamp: .now,
         dateReminder: isRemindEnabled ? date : nil,
+        isPinned: false
     )
 
     context.insert(newReminder)
@@ -34,10 +35,7 @@ func saveReminder(
         )
     }
 
-    do {
-        try context.save()
-    } catch {
-        print(error)
-    }
+    saveContext(context: context)
+
     dismiss()
 }

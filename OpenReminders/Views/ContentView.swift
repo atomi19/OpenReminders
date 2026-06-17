@@ -19,24 +19,33 @@ struct ContentView: View {
     let now = Date()
     let calendar = Calendar.current
     
+    var pinned: [Reminder] {
+        reminders.filter { $0.isPinned && !$0.isDone }
+    }
+    
     var overdue: [Reminder] {
         reminders.filter {
             guard let date = $0.dateReminder else {return false}
-            return date < now && !$0.isDone
+            return date < now && !$0.isDone && !$0.isPinned
         }
     }
     
     var today: [Reminder] {
         reminders.filter {
             guard let date = $0.dateReminder else {return false}
-            return calendar.isDateInToday(date) && !$0.isDone && date > now
+            return calendar.isDateInToday(date)
+            && !$0.isDone
+            && !$0.isPinned
+            && date > now
         }
     }
     
     var tomorrow: [Reminder] {
         reminders.filter {
             guard let date = $0.dateReminder else {return false}
-            return calendar.isDateInTomorrow(date) && !$0.isDone
+            return calendar.isDateInTomorrow(date)
+            && !$0.isDone
+            && !$0.isPinned
         }
     }
     
@@ -46,12 +55,13 @@ struct ContentView: View {
             return date > now &&
             !calendar.isDateInToday(date) &&
             !calendar.isDateInTomorrow(date) &&
-            !$0.isDone
+            !$0.isDone &&
+            !$0.isPinned
         }
     }
     
     var withoutDate: [Reminder] {
-        reminders.filter { $0.dateReminder == nil && !$0.isDone }
+        reminders.filter { $0.dateReminder == nil && !$0.isDone && !$0.isPinned }
     }
     
     var completed: [Reminder] {
@@ -60,6 +70,7 @@ struct ContentView: View {
     
     var body: some View {
         let sectionGroups: [RemindersSectionGroup] = [
+            RemindersSectionGroup(title: "Pinned", remindersList: pinned, isExpandable: false),
             RemindersSectionGroup(title: "Overdue", remindersList: overdue, isExpandable: false),
             RemindersSectionGroup(title: "Today", remindersList: today, isExpandable: false),
             RemindersSectionGroup(title: "Tomorrow", remindersList: tomorrow, isExpandable: false),
@@ -99,6 +110,7 @@ struct ContentView: View {
                         Text("Add reminders and they will appear here")
                     }
                 } else if !searchText.isEmpty &&
+                            filteredReminders(remindersList: pinned).isEmpty &&
                             filteredReminders(remindersList: overdue).isEmpty &&
                             filteredReminders(remindersList: today).isEmpty &&
                             filteredReminders(remindersList: tomorrow).isEmpty &&
@@ -221,11 +233,7 @@ struct ReminderRow: View {
                         }
                     }
                     
-                    do {
-                        try context.save()
-                    } catch {
-                        print(error)
-                    }
+                    saveContext(context: context)
                 }
             VStack(alignment: .leading) {
                 Text(reminder.title)
@@ -249,15 +257,19 @@ struct ReminderRow: View {
         .sheet(isPresented: $isShowingEditSheet, content: {
             EditReminderView(reminder: reminder)
         })
+        .swipeActions(edge: .leading) {
+            Button(reminder.isPinned ? "Unpin" : "Pin", systemImage: reminder.isPinned ? "pin.slash" : "pin") {
+                reminder.isPinned.toggle()
+                
+                saveContext(context: context)
+            }
+            .tint(.blue)
+        }
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) {
                 context.delete(reminder)
                 
-                do {
-                    try context.save()
-                } catch {
-                    print(error)
-                }
+                saveContext(context: context)
             }
             Button("Edit", systemImage: "pencil") {
                 isShowingEditSheet = true
