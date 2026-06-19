@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var isShowingAddSheet = false
     @State private var searchText = ""
     @State private var quickAddTextField = ""
+    @State private var quickDateChip: QuickDateChip? = nil
     
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -133,18 +134,54 @@ struct ContentView: View {
                 text: $searchText,
                 prompt: "Search"
             )
+            .safeAreaInset(edge: .bottom) {
+                if let chip = quickDateChip {
+                    Button(action: {
+                        quickDateChip?.isSelected.toggle()
+                    }) {
+                        Image(systemName: "calendar")
+                        Text(chip.remindDate.formatted())
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        if chip.isSelected {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                    .buttonStyle(.glass)
+                    .tint(chip.isSelected ? .blue : .primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                }
+            }
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
                     TextField("Quick Reminder", text: $quickAddTextField)
+                        .onChange(of: quickAddTextField) { oldValue, newValue in
+                            if quickAddTextField.isEmpty {
+                                quickDateChip = nil
+                            } else {
+                                handleDateExtractionFromQuickField()
+                            }
+                        }
                     Button("Add", systemImage: quickAddTextField.isEmpty ? "plus" : "checkmark") {
                         if quickAddTextField.isEmpty {
                             isShowingAddSheet.toggle()
                         } else {
-                            saveReminder(title: quickAddTextField, note: "", isDone: false, isRemindEnabled: false, date: nil, context: context, dismiss: dismiss)
+                            saveReminder(
+                                title: quickAddTextField,
+                                note: "",
+                                isDone: false,
+                                isRemindEnabled: quickDateChip?.isSelected ?? false,
+                                date: quickDateChip?.remindDate,
+                                context: context,
+                                dismiss: dismiss
+                            )
+                            
                             quickAddTextField = ""
                         }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                 }
             }
         }
@@ -159,16 +196,38 @@ struct ContentView: View {
             $0.note.localizedCaseInsensitiveContains(searchText)
         }
     }
+    
+    func handleDateExtractionFromQuickField() {
+        do {
+            let detector = try NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue)
+            
+            guard let match = detector.firstMatch(
+                in: quickAddTextField,
+                range: NSRange(quickAddTextField.startIndex..., in: quickAddTextField)
+            ),
+            let date = match.date else { return }
+            
+            quickDateChip = QuickDateChip(remindDate: date, isSelected: false)
+        } catch {
+            print(error)
+        }
+    }
 }
 
-struct RemindersSectionGroup: Identifiable {
+private struct QuickDateChip: Identifiable {
+    let id = UUID()
+    let remindDate: Date
+    var isSelected: Bool
+}
+
+private struct RemindersSectionGroup: Identifiable {
     let id = UUID()
     var title: String
     var remindersList: [Reminder]
     var isExpandable: Bool
 }
 
-struct ReminderSection: View {
+private struct ReminderSection: View {
     var sectionTitle: String
     var remindersList: [Reminder]
     var isExpandable: Bool
@@ -194,7 +253,7 @@ struct ReminderSection: View {
     }
 }
 
-struct ReminderRow: View {
+private struct ReminderRow: View {
     var reminder: Reminder
     
     private var isOverdue: Bool {
