@@ -31,12 +31,12 @@ struct EditReminderView: View {
     
     var body: some View {
         ReminderFormView(
+            isAddingReminder: false,
             reminder: reminder,
             title: $title,
             note: $note,
             date: $date,
             isRemindEnabled: $isRemindEnabled,
-            navigationTitle: "Edit Reminder",
             onConfirm: save,
             selectedRepeatOption: $selectedRepeatOption
         )

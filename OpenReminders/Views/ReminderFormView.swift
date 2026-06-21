@@ -6,6 +6,7 @@ import SwiftUI
 import SwiftData
 
 struct ReminderFormView: View {
+    let isAddingReminder: Bool
     let reminder: Reminder?
     
     @Binding var title: String
@@ -14,19 +15,19 @@ struct ReminderFormView: View {
     @Binding var isRemindEnabled: Bool
     @Binding var selectedRepeatOption: RepeatOptions
     
-    var navigationTitle: String
     var onConfirm: () -> Void
     
-    init(reminder: Reminder?,
+    init(isAddingReminder: Bool,
+         reminder: Reminder?,
          title: Binding<String>,
          note: Binding<String>,
          date: Binding<Date>,
          isRemindEnabled: Binding<Bool>,
-         navigationTitle: String,
          onConfirm: @escaping () -> Void,
          notificationsAllowed: Bool = false,
          selectedRepeatOption: Binding<RepeatOptions>
     ) {
+        self.isAddingReminder = isAddingReminder
         self.reminder = reminder
         
         _title = title
@@ -34,7 +35,6 @@ struct ReminderFormView: View {
         _date = date
         _isRemindEnabled = isRemindEnabled
         _selectedRepeatOption = selectedRepeatOption
-        self.navigationTitle = navigationTitle
         self.onConfirm = onConfirm
         self.notificationsAllowed = notificationsAllowed
     }
@@ -48,13 +48,13 @@ struct ReminderFormView: View {
     var body: some View {
         NavigationStack {
             contentSnack
-                .navigationTitle(navigationTitle)
+                .navigationTitle(isAddingReminder ? "Add Reminder" : "Edit Reminder")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     // cancel
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel", systemImage: "xmark") {
-                            if !title.isEmpty || !note.isEmpty {
+                            if isAddingReminder && (!title.isEmpty || !note.isEmpty) {
                                 isShowingCancelConfirmation = true
                             } else {
                                 dismiss()
