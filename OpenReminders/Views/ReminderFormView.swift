@@ -49,6 +49,7 @@ struct ReminderFormView: View {
         NavigationStack {
             contentSnack
                 .navigationTitle(navigationTitle)
+                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     // cancel
                     ToolbarItem(placement: .cancellationAction) {
