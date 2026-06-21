@@ -174,6 +174,7 @@ struct ContentView: View {
                                 isDone: false,
                                 isRemindEnabled: quickDateChip?.isSelected ?? false,
                                 date: quickDateChip?.remindDate,
+                                repeatOption: .never,
                                 context: context,
                                 dismiss: dismiss
                             )
@@ -287,7 +288,8 @@ private struct ReminderRow: View {
                                 uuid: reminder.uuid.uuidString,
                                 title: reminder.title,
                                 body: reminder.note,
-                                date: dateReminder
+                                date: dateReminder,
+                                repeatOption: reminder.repeatOption ?? .never
                             )
                         }
                     }
@@ -310,7 +312,6 @@ private struct ReminderRow: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-
             }
         }
         .sheet(isPresented: $isShowingEditSheet, content: {
@@ -326,6 +327,7 @@ private struct ReminderRow: View {
         }
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) {
+                NotificationService.shared.removeNotification(uuid: reminder.uuid.uuidString)
                 context.delete(reminder)
                 
                 saveContext(context: context)

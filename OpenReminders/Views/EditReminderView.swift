@@ -12,6 +12,7 @@ struct EditReminderView: View {
     @State private var note: String
     @State private var date: Date
     @State private var isRemindEnabled: Bool
+    @State private var selectedRepeatOption: RepeatOptions
     
     @State private var notificationsAllowed = false
     @State private var isShowingCancelConfirmation = false
@@ -22,6 +23,7 @@ struct EditReminderView: View {
         _note = State(initialValue: reminder.note)
         _date = State(initialValue: reminder.dateReminder ?? .now)
         _isRemindEnabled = State(initialValue: reminder.dateReminder != nil)
+        _selectedRepeatOption = State(initialValue: reminder.repeatOption ?? .never)
     }
     
     @Environment(\.dismiss) private var dismiss
@@ -35,7 +37,8 @@ struct EditReminderView: View {
             date: $date,
             isRemindEnabled: $isRemindEnabled,
             navigationTitle: "Edit Reminder",
-            onConfirm: save
+            onConfirm: save,
+            selectedRepeatOption: $selectedRepeatOption
         )
     }
     
@@ -43,13 +46,15 @@ struct EditReminderView: View {
         reminder.title = title
         reminder.note = note
         reminder.dateReminder = isRemindEnabled ? date : nil
+        reminder.repeatOption = selectedRepeatOption
 
         if(isRemindEnabled) {
             NotificationService.shared.scheduleNotification(
                 uuid: reminder.uuid.uuidString,
                 title: title,
                 body: note,
-                date: date
+                date: date,
+                repeatOption: selectedRepeatOption
             )
         }
         

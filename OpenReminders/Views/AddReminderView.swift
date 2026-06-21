@@ -14,6 +14,7 @@ struct AddReminderView: View {
     @State private var notificationsAllowed = false
     @State private var isRemindEnabled = false
     @State private var date = Date()
+    @State private var repeatOption: RepeatOptions = .never
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
@@ -26,9 +27,21 @@ struct AddReminderView: View {
             date: $date,
             isRemindEnabled: $isRemindEnabled,
             navigationTitle: "Add Reminder",
-            onConfirm: {
-                saveReminder(title: title, note: note, isDone: false, isRemindEnabled: isRemindEnabled, date: date, context: context, dismiss: dismiss)
-            }
+            onConfirm: save,
+            selectedRepeatOption: $repeatOption
+        )
+    }
+    
+    func save() {
+        saveReminder(
+            title: title,
+            note: note,
+            isDone: false,
+            isRemindEnabled: isRemindEnabled,
+            date: date,
+            repeatOption: repeatOption,
+            context: context,
+            dismiss: dismiss
         )
     }
 }

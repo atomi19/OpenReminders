@@ -12,6 +12,7 @@ func saveReminder(
     isDone: Bool,
     isRemindEnabled: Bool,
     date: Date?,
+    repeatOption: RepeatOptions,
     context: ModelContext,
     dismiss: DismissAction
 ) {
@@ -21,7 +22,8 @@ func saveReminder(
         isDone: false,
         timeStamp: .now,
         dateReminder: isRemindEnabled ? date : nil,
-        isPinned: false
+        isPinned: false,
+        repeatOption: repeatOption
     )
 
     context.insert(newReminder)
@@ -31,7 +33,8 @@ func saveReminder(
             uuid: newReminder.uuid.uuidString,
             title: title,
             body: note,
-            date: date
+            date: date,
+            repeatOption: repeatOption
         )
     }
 

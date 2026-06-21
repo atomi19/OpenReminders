@@ -21,20 +21,51 @@ class NotificationService {
         title: String,
         body: String,
         date: Date,
+        repeatOption: RepeatOptions
     ) {
         let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
             content.sound = .default
         
-        let dateComponents = Calendar.current.dateComponents(
-            [.year, .month, .day, .hour, .minute, .second],
-            from: date
-        )
+        var dateComponents = DateComponents()
+        
+        switch repeatOption {
+        case .never:
+            dateComponents = Calendar.current.dateComponents(
+                [.year, .month, .day, .hour, .minute, .second],
+                from: date
+            )
+        case .hourly:
+            dateComponents = Calendar.current.dateComponents(
+                [.minute],
+                from: date
+            )
+        case .daily:
+            dateComponents = Calendar.current.dateComponents(
+                [.hour, .minute],
+                from: date
+            )
+        case .weekly:
+            dateComponents = Calendar.current.dateComponents(
+                [.weekday, .hour, .minute],
+                from: date
+            )
+        case .monthly:
+            dateComponents = Calendar.current.dateComponents(
+                [.day, .hour, .minute],
+                from: date
+            )
+        case .yearly:
+            dateComponents = Calendar.current.dateComponents(
+                [.month, .day, .hour, .minute],
+                from: date
+            )
+        }
         
         let trigger = UNCalendarNotificationTrigger(
             dateMatching: dateComponents,
-            repeats: false,
+            repeats: repeatOption == .never ? false : true,
         )
         
         let request = UNNotificationRequest(
@@ -43,12 +74,12 @@ class NotificationService {
             trigger: trigger
         )
         
-        UNUserNotificationCenter.current().add(request) {error in
+        UNUserNotificationCenter.current().add(request) { error in
+            #if DEBUG
             if let error {
                 print("Failed to add request: \(error)")
-            } else {
-                print("Notification added")
             }
+            #endif
         }
     }
     
@@ -56,5 +87,6 @@ class NotificationService {
         let center = UNUserNotificationCenter.current()
         
         center.removePendingNotificationRequests(withIdentifiers: [uuid])
+        center.removeDeliveredNotifications(withIdentifiers: [uuid])
     }
 }
