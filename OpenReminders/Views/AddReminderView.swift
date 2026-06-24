@@ -41,7 +41,6 @@ struct AddReminderView: View {
             date: date,
             repeatOption: repeatOption,
             context: context,
-            dismiss: dismiss
         )
     }
 }

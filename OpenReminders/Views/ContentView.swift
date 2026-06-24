@@ -10,6 +10,7 @@ struct ContentView: View {
     private var reminders: [Reminder]
     
     @State private var isShowingAddSheet = false
+    @State private var selectedReminder: Reminder?
     @State private var searchText = ""
     @State private var quickAddTextField = ""
     @State private var quickDateChip: QuickDateChip? = nil
@@ -97,7 +98,10 @@ struct ContentView: View {
                     ReminderSection(
                         sectionTitle: group.title,
                         remindersList: group.remindersList,
-                        isExpandable: group.isExpandable
+                        isExpandable: group.isExpandable,
+                        onEdit: { reminder in
+                            selectedReminder = reminder
+                        }
                     )
                 }
             }
@@ -129,6 +133,9 @@ struct ContentView: View {
             .sheet(isPresented: $isShowingAddSheet) {
                 AddReminderView()
             }
+            .sheet(item: $selectedReminder) { reminder in
+                EditReminderView(reminder: reminder)
+            }
             .navigationTitle("OpenReminders")
             .searchable(
                 text: $searchText,
@@ -137,7 +144,10 @@ struct ContentView: View {
             .safeAreaInset(edge: .bottom) {
                 if let chip = quickDateChip {
                     Button(action: {
-                        quickDateChip?.isSelected.toggle()
+                        if var chip = quickDateChip {
+                            chip.isSelected.toggle()
+                            quickDateChip = chip
+                        }
                     }) {
                         Image(systemName: "calendar")
                         Text(chip.remindDate.formatted())
@@ -149,11 +159,12 @@ struct ContentView: View {
                         }
                     }
                     .buttonStyle(.glass)
-                    .tint(chip.isSelected ? .blue : .primary)
+                    .tint(chip.isSelected ? Color.blue : Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                 }
             }
+            #if os(iOS)
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
                     TextField("Quick Reminder", text: $quickAddTextField)
@@ -176,7 +187,6 @@ struct ContentView: View {
                                 date: quickDateChip?.remindDate,
                                 repeatOption: .never,
                                 context: context,
-                                dismiss: dismiss
                             )
                             
                             quickAddTextField = ""
@@ -185,6 +195,57 @@ struct ContentView: View {
                     .buttonStyle(.glassProminent)
                 }
             }
+            #elseif os(macOS)
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    TextField("Quick Reminder", text: $quickAddTextField)
+                        .textFieldStyle(.roundedBorder)
+                        .onChange(of: quickAddTextField) { oldValue, newValue in
+                            if quickAddTextField.isEmpty {
+                                quickDateChip = nil
+                            } else {
+                                handleDateExtractionFromQuickField()
+                            }
+                        }
+                        .onSubmit {
+                            if quickAddTextField.isEmpty {
+                                isShowingAddSheet = true
+                            } else {
+                                saveReminder(
+                                    title: quickAddTextField,
+                                    note: "",
+                                    isDone: false,
+                                    isRemindEnabled: quickDateChip?.isSelected ?? false,
+                                    date: quickDateChip?.remindDate,
+                                    repeatOption: .never,
+                                    context: context
+                                )
+                                
+                                quickAddTextField = ""
+                            }
+                        }
+                    Button(quickAddTextField.isEmpty ? "Add" : "Done", systemImage: quickAddTextField.isEmpty ? "plus" : "checkmark") {
+                        if quickAddTextField.isEmpty {
+                            isShowingAddSheet.toggle()
+                        } else {
+                            saveReminder(
+                                title: quickAddTextField,
+                                note: "",
+                                isDone: false,
+                                isRemindEnabled: quickDateChip?.isSelected ?? false,
+                                date: quickDateChip?.remindDate,
+                                repeatOption: .never,
+                                context: context,
+                            )
+                            
+                            quickAddTextField = ""
+                        }
+                    }
+                    .buttonStyle(.glassProminent)
+                }
+                .padding()
+            }
+            #endif
         }
     }
     
@@ -232,6 +293,7 @@ private struct ReminderSection: View {
     var sectionTitle: String
     var remindersList: [Reminder]
     var isExpandable: Bool
+    let onEdit: (Reminder) -> Void
     
     @State private var isExpanded: Bool = false
     
@@ -240,13 +302,19 @@ private struct ReminderSection: View {
             if isExpandable {
                 Section("\(sectionTitle) (\(remindersList.count))", isExpanded: $isExpanded) {
                     ForEach(remindersList) { reminder in
-                        ReminderRow(reminder: reminder)
+                        ReminderRow(
+                            reminder: reminder,
+                            onEdit: onEdit
+                        )
                     }
                 }
             } else {
                 Section("\(sectionTitle) (\(remindersList.count))") {
                     ForEach(remindersList) { reminder in
-                        ReminderRow(reminder: reminder)
+                        ReminderRow(
+                            reminder: reminder,
+                            onEdit: onEdit
+                        )
                     }
                 }
             }
@@ -256,6 +324,7 @@ private struct ReminderSection: View {
 
 private struct ReminderRow: View {
     var reminder: Reminder
+    let onEdit: (Reminder) -> Void
     
     private var isOverdue: Bool {
         if let date = reminder.dateReminder {
@@ -314,29 +383,47 @@ private struct ReminderRow: View {
                 }
             }
         }
-        .sheet(isPresented: $isShowingEditSheet, content: {
-            EditReminderView(reminder: reminder)
-        })
+        #if os(iOS)
         .swipeActions(edge: .leading) {
             Button(reminder.isPinned ? "Unpin" : "Pin", systemImage: reminder.isPinned ? "pin.slash" : "pin") {
-                reminder.isPinned.toggle()
-                
-                saveContext(context: context)
+                handleReminderPin(reminder: reminder)
             }
             .tint(.blue)
         }
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) {
-                NotificationService.shared.removeNotification(uuid: reminder.uuid.uuidString)
-                context.delete(reminder)
-                
-                saveContext(context: context)
+                handleReminderDelete(reminder: reminder)
             }
             Button("Edit", systemImage: "pencil") {
-                isShowingEditSheet = true
+                onEdit(reminder)
             }
             .tint(.orange)
         }
+        #elseif os(macOS)
+        .contextMenu {
+            Button(reminder.isPinned ? "Unpin" : "Pin", systemImage: reminder.isPinned ? "pin.slash" : "pin") {
+                handleReminderPin(reminder: reminder)
+            }
+            Button("Edit", systemImage: "pencil") {
+                onEdit(reminder)
+            }
+            Divider()
+            Button("Delete", systemImage: "trash", role: .destructive) {
+                handleReminderDelete(reminder: reminder)
+            }
+        }
+        #endif
+    }
+    
+    func handleReminderPin(reminder: Reminder) {
+        reminder.isPinned.toggle()
+        saveContext(context: context)
+    }
+    
+    func handleReminderDelete(reminder: Reminder) {
+        NotificationService.shared.removeNotification(uuid: reminder.uuid.uuidString)
+        context.delete(reminder)
+        saveContext(context: context)
     }
 }
 

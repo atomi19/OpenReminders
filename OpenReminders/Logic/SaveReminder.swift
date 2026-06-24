@@ -14,7 +14,6 @@ func saveReminder(
     date: Date?,
     repeatOption: RepeatOptions,
     context: ModelContext,
-    dismiss: DismissAction
 ) {
     let newReminder = Reminder(
         title: title,
@@ -39,6 +38,4 @@ func saveReminder(
     }
 
     saveContext(context: context)
-
-    dismiss()
 }

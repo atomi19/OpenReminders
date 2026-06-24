@@ -59,7 +59,5 @@ struct EditReminderView: View {
         }
         
         saveContext(context: context)
-        
-        dismiss()
     }
 }

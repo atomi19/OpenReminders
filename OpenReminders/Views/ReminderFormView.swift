@@ -49,7 +49,9 @@ struct ReminderFormView: View {
         NavigationStack {
             contentSnack
                 .navigationTitle(isAddingReminder ? "Add Reminder" : "Edit Reminder")
+            #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+            #endif
                 .toolbar {
                     // cancel
                     ToolbarItem(placement: .cancellationAction) {
@@ -70,6 +72,7 @@ struct ReminderFormView: View {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Confirm", systemImage: "checkmark") {
                             onConfirm()
+                            dismiss()
                         }
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
@@ -82,6 +85,7 @@ struct ReminderFormView: View {
     }
     
     var contentSnack: some View {
+        #if os(iOS)
         Form {
             Section {
                 TextField("Title", text: $title)
@@ -135,5 +139,60 @@ struct ReminderFormView: View {
                 }
             }
         }
+        #elseif os(macOS)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                TextField("Title", text: $title)
+                    .font(.title.bold())
+                
+                TextField("Note", text: $note, axis: .vertical)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(5)
+                    .font(.default)
+                
+                Toggle(isOn: $isRemindEnabled) {
+                    Label {
+                        Text("Remind")
+                    } icon: {
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .onChange(of: isRemindEnabled) { oldValue, newValue in
+                    if newValue {
+                        Task {
+                            await notificationsAllowed = NotificationService.shared.requestNotificationPermission()
+                        }
+                    }
+                }
+                if isRemindEnabled {
+                    DatePicker(
+                        "Remind at",
+                        selection: $date
+                    )
+                    Picker("Repeat", selection: $selectedRepeatOption) {
+                        ForEach(RepeatOptions.allCases) { repeatOption in
+                            if repeatOption == .never {
+                                Text(repeatOption.rawValue.capitalized)
+                                Divider()
+                            } else {
+                                Text(repeatOption.rawValue.capitalized)
+                            }
+                        }
+                    }
+                    if !notificationsAllowed {
+                        HStack {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(.orange)
+                            Text("Notifications permission denied")
+                                .font(.caption)
+                        }
+                    }
+                }
+            }
+            .padding()
+        }
+        #endif
     }
 }
+
