@@ -88,111 +88,76 @@ struct ReminderFormView: View {
         #if os(iOS)
         Form {
             Section {
-                TextField("Title", text: $title)
-                    .font(.title.bold())
-                
-                TextField("Note", text: $note, axis: .vertical)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(5)
-                    .font(.default)
+                reminderTitleAndNote
             }
             
             Section("Date & Time") {
-                Toggle(isOn: $isRemindEnabled) {
-                    Label {
-                        Text("Remind")
-                    } icon: {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .onChange(of: isRemindEnabled) { oldValue, newValue in
-                    if newValue {
-                        Task {
-                            await notificationsAllowed = NotificationService.shared.requestNotificationPermission()
-                        }
-                    }
-                }
-                if isRemindEnabled {
-                    DatePicker(
-                        "Remind at",
-                        selection: $date
-                    )
-                    Picker("Repeat", selection: $selectedRepeatOption) {
-                        ForEach(RepeatOptions.allCases) { repeatOption in
-                            if repeatOption == .never {
-                                Text(repeatOption.rawValue.capitalized)
-                                Divider()
-                            } else {
-                                Text(repeatOption.rawValue.capitalized)
-                            }
-                        }
-                    }
-                    if !notificationsAllowed {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.orange)
-                            Text("Notifications permission denied")
-                                .font(.caption)
-                        }
-                    }
-                }
+                reminderSection
             }
         }
         #elseif os(macOS)
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                TextField("Title", text: $title)
-                    .font(.title.bold())
+                reminderTitleAndNote
                 
-                TextField("Note", text: $note, axis: .vertical)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(5)
-                    .font(.default)
-                
-                Toggle(isOn: $isRemindEnabled) {
-                    Label {
-                        Text("Remind")
-                    } icon: {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .onChange(of: isRemindEnabled) { oldValue, newValue in
-                    if newValue {
-                        Task {
-                            await notificationsAllowed = NotificationService.shared.requestNotificationPermission()
-                        }
-                    }
-                }
-                if isRemindEnabled {
-                    DatePicker(
-                        "Remind at",
-                        selection: $date
-                    )
-                    Picker("Repeat", selection: $selectedRepeatOption) {
-                        ForEach(RepeatOptions.allCases) { repeatOption in
-                            if repeatOption == .never {
-                                Text(repeatOption.rawValue.capitalized)
-                                Divider()
-                            } else {
-                                Text(repeatOption.rawValue.capitalized)
-                            }
-                        }
-                    }
-                    if !notificationsAllowed {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.orange)
-                            Text("Notifications permission denied")
-                                .font(.caption)
-                        }
-                    }
-                }
+                reminderSection
             }
             .padding()
         }
         #endif
     }
+    
+    @ViewBuilder
+    private var reminderTitleAndNote: some View {
+        TextField("Title", text: $title)
+            .font(.title.bold())
+        
+        TextField("Note", text: $note, axis: .vertical)
+            .multilineTextAlignment(.leading)
+            .lineLimit(5)
+            .font(.default)
+    }
+    
+    @ViewBuilder
+    private var reminderSection: some View {
+        Toggle(isOn: $isRemindEnabled) {
+            Label {
+                Text("Remind")
+            } icon: {
+                Image(systemName: "calendar")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .onChange(of: isRemindEnabled) { oldValue, newValue in
+            if newValue {
+                Task {
+                    await notificationsAllowed = NotificationService.shared.requestNotificationPermission()
+                }
+            }
+        }
+        if isRemindEnabled {
+            DatePicker(
+                "Remind at",
+                selection: $date
+            )
+            Picker("Repeat", selection: $selectedRepeatOption) {
+                ForEach(RepeatOptions.allCases) { repeatOption in
+                    if repeatOption == .never {
+                        Text(repeatOption.rawValue.capitalized)
+                        Divider()
+                    } else {
+                        Text(repeatOption.rawValue.capitalized)
+                    }
+                }
+            }
+            if !notificationsAllowed {
+                HStack {
+                    Image(systemName: "info.circle")
+                        .foregroundStyle(.orange)
+                    Text("Notifications permission denied")
+                        .font(.caption)
+                }
+            }
+        }
+    }
 }
-

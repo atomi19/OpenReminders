@@ -18,83 +18,42 @@ struct ContentView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     
-    let now = Date()
-    let calendar = Calendar.current
+    let filter = ReminderFilter()
     
-    var pinned: [Reminder] {
-        reminders.filter { $0.isPinned && !$0.isDone }
+    var pinned: [Reminder] { filter.pinned(reminders) }
+    var overdue: [Reminder] { filter.overdue(reminders) }
+    var today: [Reminder] { filter.today(reminders) }
+    var tomorrow: [Reminder] { filter.tomorrow(reminders) }
+    var upcoming: [Reminder] { filter.upcoming(reminders) }
+    var withoutDate: [Reminder] { filter.withoutDate(reminders) }
+    var completed: [Reminder] { filter.completed(reminders) }
+    
+    private var sectionGroups: [RemindersSectionGroup] {
+        [
+            .init(title: "Pinned", remindersList: pinned, isExpandable: false),
+            .init(title: "Overdue", remindersList: overdue, isExpandable: false),
+            .init(title: "Today", remindersList: today, isExpandable: false),
+            .init(title: "Tomorrow", remindersList: tomorrow, isExpandable: false),
+            .init(title: "Upcoming", remindersList: upcoming, isExpandable: false),
+            .init(title: "No Date", remindersList: withoutDate, isExpandable: false),
+            .init(title: "Completed", remindersList: completed, isExpandable: true)
+        ]
     }
     
-    var overdue: [Reminder] {
-        reminders.filter {
-            guard let date = $0.dateReminder else {return false}
-            return date < now && !$0.isDone && !$0.isPinned
+    private var filteredSectionGroups: [RemindersSectionGroup] {
+        sectionGroups.map {
+            RemindersSectionGroup(
+                title: $0.title,
+                remindersList: filteredReminders(remindersList: $0.remindersList),
+                isExpandable: $0.isExpandable
+            )
         }
-    }
-    
-    var today: [Reminder] {
-        reminders.filter {
-            guard let date = $0.dateReminder else {return false}
-            return calendar.isDateInToday(date)
-            && !$0.isDone
-            && !$0.isPinned
-            && date > now
-        }
-    }
-    
-    var tomorrow: [Reminder] {
-        reminders.filter {
-            guard let date = $0.dateReminder else {return false}
-            return calendar.isDateInTomorrow(date)
-            && !$0.isDone
-            && !$0.isPinned
-        }
-    }
-    
-    var upcoming: [Reminder] {
-        reminders.filter {
-            guard let date = $0.dateReminder else {return false}
-            return date > now &&
-            !calendar.isDateInToday(date) &&
-            !calendar.isDateInTomorrow(date) &&
-            !$0.isDone &&
-            !$0.isPinned
-        }
-    }
-    
-    var withoutDate: [Reminder] {
-        reminders.filter { $0.dateReminder == nil && !$0.isDone && !$0.isPinned }
-    }
-    
-    var completed: [Reminder] {
-        reminders.filter { $0.isDone }
     }
     
     var body: some View {
-        let sectionGroups: [RemindersSectionGroup] = [
-            RemindersSectionGroup(title: "Pinned", remindersList: pinned, isExpandable: false),
-            RemindersSectionGroup(title: "Overdue", remindersList: overdue, isExpandable: false),
-            RemindersSectionGroup(title: "Today", remindersList: today, isExpandable: false),
-            RemindersSectionGroup(title: "Tomorrow", remindersList: tomorrow, isExpandable: false),
-            RemindersSectionGroup(title: "Upcoming", remindersList: upcoming, isExpandable: false),
-            RemindersSectionGroup(title: "No Date", remindersList: withoutDate, isExpandable: false),
-            RemindersSectionGroup(title: "Completed", remindersList: completed, isExpandable: true)
-        ]
-        
-        var filteredSectionGroup: [RemindersSectionGroup] {
-            sectionGroups
-                .map {
-                    RemindersSectionGroup(
-                        title: $0.title,
-                        remindersList: filteredReminders(remindersList: filteredReminders(remindersList: $0.remindersList)),
-                        isExpandable: $0.isExpandable
-                    )
-                }
-        }
-        
         NavigationStack {
             List {
-                ForEach(filteredSectionGroup) { group in
+                ForEach(filteredSectionGroups) { group in
                     ReminderSection(
                         sectionTitle: group.title,
                         remindersList: group.remindersList,
@@ -224,7 +183,10 @@ struct ContentView: View {
                                 quickAddTextField = ""
                             }
                         }
-                    Button(quickAddTextField.isEmpty ? "Add" : "Done", systemImage: quickAddTextField.isEmpty ? "plus" : "checkmark") {
+                    Button(
+                        quickAddTextField.isEmpty ? "Add" : "Done",
+                        systemImage: quickAddTextField.isEmpty ? "plus" : "checkmark"
+                    ) {
                         if quickAddTextField.isEmpty {
                             isShowingAddSheet.toggle()
                         } else {
@@ -301,23 +263,22 @@ private struct ReminderSection: View {
         if !remindersList.isEmpty {
             if isExpandable {
                 Section("\(sectionTitle) (\(remindersList.count))", isExpanded: $isExpanded) {
-                    ForEach(remindersList) { reminder in
-                        ReminderRow(
-                            reminder: reminder,
-                            onEdit: onEdit
-                        )
-                    }
+                    handleReminder
                 }
             } else {
                 Section("\(sectionTitle) (\(remindersList.count))") {
-                    ForEach(remindersList) { reminder in
-                        ReminderRow(
-                            reminder: reminder,
-                            onEdit: onEdit
-                        )
-                    }
+                    handleReminder
                 }
             }
+        }
+    }
+    
+    private var handleReminder: some View {
+        ForEach(remindersList) { reminder in
+            ReminderRow(
+                reminder: reminder,
+                onEdit: onEdit
+            )
         }
     }
 }
@@ -385,34 +346,43 @@ private struct ReminderRow: View {
         }
         #if os(iOS)
         .swipeActions(edge: .leading) {
-            Button(reminder.isPinned ? "Unpin" : "Pin", systemImage: reminder.isPinned ? "pin.slash" : "pin") {
-                handleReminderPin(reminder: reminder)
-            }
+            pinButton
             .tint(.blue)
         }
         .swipeActions(edge: .trailing) {
-            Button("Delete", systemImage: "trash", role: .destructive) {
-                handleReminderDelete(reminder: reminder)
-            }
-            Button("Edit", systemImage: "pencil") {
-                onEdit(reminder)
-            }
+            deleteButton
+            editButton
             .tint(.orange)
         }
         #elseif os(macOS)
         .contextMenu {
-            Button(reminder.isPinned ? "Unpin" : "Pin", systemImage: reminder.isPinned ? "pin.slash" : "pin") {
-                handleReminderPin(reminder: reminder)
-            }
-            Button("Edit", systemImage: "pencil") {
-                onEdit(reminder)
-            }
+            pinButton
+            editButton
             Divider()
-            Button("Delete", systemImage: "trash", role: .destructive) {
-                handleReminderDelete(reminder: reminder)
-            }
+            deleteButton
         }
         #endif
+    }
+    
+    private var pinButton: some View {
+        Button(
+            reminder.isPinned ? "Unpin" : "Pin",
+            systemImage: reminder.isPinned ? "pin.slash" : "pin"
+        ) {
+            handleReminderPin(reminder: reminder)
+        }
+    }
+    
+    private var editButton: some View {
+        Button("Edit", systemImage: "pencil") {
+            onEdit(reminder)
+        }
+    }
+    
+    private var deleteButton: some View {
+        Button("Delete", systemImage: "trash", role: .destructive) {
+            handleReminderDelete(reminder: reminder)
+        }
     }
     
     func handleReminderPin(reminder: Reminder) {
