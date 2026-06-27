@@ -12,7 +12,7 @@ struct ContentView: View {
     @State private var isShowingAddSheet = false
     @State private var selectedReminder: Reminder?
     @State private var searchText = ""
-    @State private var quickAddTextField = ""
+    @State private var quickAddText = ""
     @State private var quickDateChip: QuickDateChip? = nil
     
     @Environment(\.modelContext) private var context
@@ -126,88 +126,87 @@ struct ContentView: View {
             #if os(iOS)
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
-                    TextField("Quick Reminder", text: $quickAddTextField)
-                        .onChange(of: quickAddTextField) { oldValue, newValue in
-                            if quickAddTextField.isEmpty {
-                                quickDateChip = nil
-                            } else {
-                                handleDateExtractionFromQuickField()
-                            }
-                        }
-                    Button("Add", systemImage: quickAddTextField.isEmpty ? "plus" : "checkmark") {
-                        if quickAddTextField.isEmpty {
-                            isShowingAddSheet.toggle()
-                        } else {
-                            saveReminder(
-                                title: quickAddTextField,
-                                note: "",
-                                isDone: false,
-                                isRemindEnabled: quickDateChip?.isSelected ?? false,
-                                date: quickDateChip?.remindDate,
-                                repeatOption: .never,
-                                context: context,
-                            )
-                            
-                            quickAddTextField = ""
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
+                    quickAddField
+                    openAddSheetButton
                 }
             }
             #elseif os(macOS)
             .safeAreaInset(edge: .bottom) {
                 HStack {
-                    TextField("Quick Reminder", text: $quickAddTextField)
-                        .textFieldStyle(.roundedBorder)
-                        .onChange(of: quickAddTextField) { oldValue, newValue in
-                            if quickAddTextField.isEmpty {
-                                quickDateChip = nil
-                            } else {
-                                handleDateExtractionFromQuickField()
-                            }
-                        }
-                        .onSubmit {
-                            if quickAddTextField.isEmpty {
-                                isShowingAddSheet = true
-                            } else {
-                                saveReminder(
-                                    title: quickAddTextField,
-                                    note: "",
-                                    isDone: false,
-                                    isRemindEnabled: quickDateChip?.isSelected ?? false,
-                                    date: quickDateChip?.remindDate,
-                                    repeatOption: .never,
-                                    context: context
-                                )
-                                
-                                quickAddTextField = ""
-                            }
-                        }
-                    Button(
-                        quickAddTextField.isEmpty ? "Add" : "Done",
-                        systemImage: quickAddTextField.isEmpty ? "plus" : "checkmark"
-                    ) {
-                        if quickAddTextField.isEmpty {
-                            isShowingAddSheet.toggle()
-                        } else {
-                            saveReminder(
-                                title: quickAddTextField,
-                                note: "",
-                                isDone: false,
-                                isRemindEnabled: quickDateChip?.isSelected ?? false,
-                                date: quickDateChip?.remindDate,
-                                repeatOption: .never,
-                                context: context,
-                            )
-                            
-                            quickAddTextField = ""
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
+                    quickAddField
+                    openAddSheetButton
                 }
                 .padding()
             }
             #endif
+        }
+    }
+    
+    private var quickAddField: some View {
+        TextField("Quick Reminder", text: $quickAddText)
+            .onChange(of: quickAddText) { oldValue, newValue in
+                if quickAddText.isEmpty {
+                    quickDateChip = nil
+                } else {
+                    handleDateExtractionFromQuickField()
+                }
+            }
+            .onSubmit {
+                if quickAddText.isEmpty {
+                    isShowingAddSheet = true
+                } else {
+                    saveReminder(
+                        title: quickAddText,
+                        note: "",
+                        isDone: false,
+                        isRemindEnabled: quickDateChip?.isSelected ?? false,
+                        date: quickDateChip?.remindDate,
+                        repeatOption: .never,
+                        context: context
+                    )
+
+                    quickAddText = ""
+                }
+            }
+    }
+    
+    private var openAddSheetButton: some View {
+        Button(
+            quickAddText.isEmpty ? "Add" : "Done",
+            systemImage: quickAddText.isEmpty ? "plus" : "checkmark"
+        ) {
+            if quickAddText.isEmpty {
+                isShowingAddSheet.toggle()
+            } else {
+                saveReminder(
+                    title: quickAddText,
+                    note: "",
+                    isDone: false,
+                    isRemindEnabled: quickDateChip?.isSelected ?? false,
+                    date: quickDateChip?.remindDate,
+                    repeatOption: .never,
+                    context: context,
+                )
+
+                quickAddText = ""
+            }
+        }
+        .buttonStyle(.borderedProminent)
+    }
+    
+    func handleDateExtractionFromQuickField() {
+        do {
+            let detector = try NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue)
+            
+            guard let match = detector.firstMatch(
+                in: quickAddText,
+                range: NSRange(quickAddText.startIndex..., in: quickAddText)
+            ),
+            let date = match.date else { return }
+            
+            quickDateChip = QuickDateChip(remindDate: date, isSelected: false)
+        } catch {
+            print(error)
         }
     }
     
@@ -220,25 +219,9 @@ struct ContentView: View {
             $0.note.localizedCaseInsensitiveContains(searchText)
         }
     }
-    
-    func handleDateExtractionFromQuickField() {
-        do {
-            let detector = try NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue)
-            
-            guard let match = detector.firstMatch(
-                in: quickAddTextField,
-                range: NSRange(quickAddTextField.startIndex..., in: quickAddTextField)
-            ),
-            let date = match.date else { return }
-            
-            quickDateChip = QuickDateChip(remindDate: date, isSelected: false)
-        } catch {
-            print(error)
-        }
-    }
 }
 
-private struct QuickDateChip: Identifiable {
+struct QuickDateChip: Identifiable {
     let id = UUID()
     let remindDate: Date
     var isSelected: Bool
