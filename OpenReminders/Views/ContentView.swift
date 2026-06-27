@@ -117,8 +117,8 @@ struct ContentView: View {
                             Image(systemName: "checkmark")
                         }
                     }
-                    .buttonStyle(.glass)
-                    .tint(chip.isSelected ? Color.blue : Color.primary)
+                    .buttonStyle(.borderedProminent)
+                    .tint(chip.isSelected ? Color.blue : Color.gray)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                 }
@@ -151,7 +151,7 @@ struct ContentView: View {
                             quickAddTextField = ""
                         }
                     }
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
                 }
             }
             #elseif os(macOS)
@@ -203,7 +203,7 @@ struct ContentView: View {
                             quickAddTextField = ""
                         }
                     }
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
                 }
                 .padding()
             }

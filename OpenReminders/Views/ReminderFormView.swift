@@ -115,7 +115,6 @@ struct ReminderFormView: View {
         TextField("Note", text: $note, axis: .vertical)
             .multilineTextAlignment(.leading)
             .lineLimit(5)
-            .font(.default)
     }
     
     @ViewBuilder
