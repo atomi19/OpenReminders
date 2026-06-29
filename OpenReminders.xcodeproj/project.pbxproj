@@ -6,20 +6,83 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		3A9030662FF16D5000ABFF48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3A5DC2F52FD208EE00289434 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3A90305D2FF16D4F00ABFF48;
+			remoteInfo = "OpenReminders Watch App Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3A90306C2FF16D5000ABFF48 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		3A5DC2FD2FD208EE00289434 /* OpenReminders.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenReminders.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A90305E2FF16D4F00ABFF48 /* OpenReminders Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OpenReminders Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3A90306E2FF17CC200ABFF48 /* Exceptions for "OpenReminders" folder in "OpenReminders Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared/Logic/FilteredReminders.swift,
+				Shared/Logic/ReminderFilter.swift,
+				Shared/Logic/SaveContext.swift,
+				Shared/Logic/SaveReminder.swift,
+				Shared/Models/Reminder.swift,
+				Shared/Models/RepeatOptions.swift,
+				Shared/Services/NotificationService.swift,
+				Shared/UIModels/ReminderSection.swift,
+				Shared/UIModels/RemindersSectionGroup.swift,
+				Shared/Views/AddReminderView.swift,
+				Shared/Views/EditReminderView.swift,
+				Shared/Views/NoRemindersView.swift,
+				Shared/Views/NoSearchResultsView.swift,
+				Shared/Views/ReminderFormView.swift,
+				Shared/Views/ReminderRow.swift,
+			);
+			target = 3A90305D2FF16D4F00ABFF48 /* OpenReminders Watch App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3A5DC2FF2FD208EE00289434 /* OpenReminders */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3A90306E2FF17CC200ABFF48 /* Exceptions for "OpenReminders" folder in "OpenReminders Watch App" target */,
+			);
 			path = OpenReminders;
+			sourceTree = "<group>";
+		};
+		3A90305F2FF16D4F00ABFF48 /* OpenReminders Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "OpenReminders Watch App";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		3A5DC2FA2FD208EE00289434 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3A90305B2FF16D4F00ABFF48 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				3A5DC2FF2FD208EE00289434 /* OpenReminders */,
+				3A90305F2FF16D4F00ABFF48 /* OpenReminders Watch App */,
 				3A5DC2FE2FD208EE00289434 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				3A5DC2FD2FD208EE00289434 /* OpenReminders.app */,
+				3A90305E2FF16D4F00ABFF48 /* OpenReminders Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,10 +120,12 @@
 				3A5DC2F92FD208EE00289434 /* Sources */,
 				3A5DC2FA2FD208EE00289434 /* Frameworks */,
 				3A5DC2FB2FD208EE00289434 /* Resources */,
+				3A90306C2FF16D5000ABFF48 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3A9030672FF16D5000ABFF48 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3A5DC2FF2FD208EE00289434 /* OpenReminders */,
@@ -70,6 +137,28 @@
 			productReference = 3A5DC2FD2FD208EE00289434 /* OpenReminders.app */;
 			productType = "com.apple.product-type.application";
 		};
+		3A90305D2FF16D4F00ABFF48 /* OpenReminders Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3A9030692FF16D5000ABFF48 /* Build configuration list for PBXNativeTarget "OpenReminders Watch App" */;
+			buildPhases = (
+				3A90305A2FF16D4F00ABFF48 /* Sources */,
+				3A90305B2FF16D4F00ABFF48 /* Frameworks */,
+				3A90305C2FF16D4F00ABFF48 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3A90305F2FF16D4F00ABFF48 /* OpenReminders Watch App */,
+			);
+			name = "OpenReminders Watch App";
+			packageProductDependencies = (
+			);
+			productName = "OpenReminders Watch App Watch App";
+			productReference = 3A90305E2FF16D4F00ABFF48 /* OpenReminders Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -77,11 +166,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2650;
+				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					3A5DC2FC2FD208EE00289434 = {
 						CreatedOnToolsVersion = 26.5;
+					};
+					3A90305D2FF16D4F00ABFF48 = {
+						CreatedOnToolsVersion = 26.6;
 					};
 				};
 			};
@@ -100,12 +192,20 @@
 			projectRoot = "";
 			targets = (
 				3A5DC2FC2FD208EE00289434 /* OpenReminders */,
+				3A90305D2FF16D4F00ABFF48 /* OpenReminders Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		3A5DC2FB2FD208EE00289434 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3A90305C2FF16D4F00ABFF48 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +222,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3A90305A2FF16D4F00ABFF48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3A9030672FF16D5000ABFF48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3A90305D2FF16D4F00ABFF48 /* OpenReminders Watch App */;
+			targetProxy = 3A9030662FF16D5000ABFF48 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		3A5DC3062FD208EF00289434 /* Debug */ = {
@@ -180,6 +295,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -238,6 +354,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -285,7 +402,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.5;
+				XROS_DEPLOYMENT_TARGET = 2.6;
 			};
 			name = Debug;
 		};
@@ -329,7 +446,72 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.5;
+				XROS_DEPLOYMENT_TARGET = 2.6;
+			};
+			name = Release;
+		};
+		3A90306A2FF16D5000ABFF48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "OpenReminders Watch App";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = io.github.atomi19.OpenReminders;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.atomi19.OpenReminders.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
+			};
+			name = Debug;
+		};
+		3A90306B2FF16D5000ABFF48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "OpenReminders Watch App";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = io.github.atomi19.OpenReminders;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.atomi19.OpenReminders.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
 			};
 			name = Release;
 		};
@@ -350,6 +532,15 @@
 			buildConfigurations = (
 				3A5DC3092FD208EF00289434 /* Debug */,
 				3A5DC30A2FD208EF00289434 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3A9030692FF16D5000ABFF48 /* Build configuration list for PBXNativeTarget "OpenReminders Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3A90306A2FF16D5000ABFF48 /* Debug */,
+				3A90306B2FF16D5000ABFF48 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

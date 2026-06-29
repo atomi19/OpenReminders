@@ -104,13 +104,20 @@ struct ReminderFormView: View {
             }
             .padding()
         }
+        #elseif os(watchOS)
+        Form {
+            reminderTitleAndNote
+            reminderSection
+        }
         #endif
     }
     
     @ViewBuilder
     private var reminderTitleAndNote: some View {
         TextField("Title", text: $title)
+        #if os(iOS) || os(macOS)
             .font(.title.bold())
+        #endif
         
         TextField("Note", text: $note, axis: .vertical)
             .multilineTextAlignment(.leading)
@@ -135,6 +142,7 @@ struct ReminderFormView: View {
             }
         }
         if isRemindEnabled {
+            #if os(iOS) || os(macOS)
             DatePicker(
                 "Remind at",
                 selection: $date
@@ -149,6 +157,49 @@ struct ReminderFormView: View {
                     }
                 }
             }
+            #elseif os(watchOS)
+            Section("Date & Time") {
+                if isRemindEnabled {
+                    // date
+                    NavigationLink {
+                        DatePicker(
+                            "Select date",
+                            selection: $date,
+                            displayedComponents: [.date]
+                        )
+                    } label: {
+                        Image(systemName: "calendar")
+                        Text("Date")
+                        Spacer()
+                        Text(date, style: .date)
+                            .foregroundStyle(.secondary)
+                    }
+                    // time
+                    NavigationLink {
+                        DatePicker(
+                            "Select time",
+                            selection: $date,
+                            displayedComponents: [.hourAndMinute]
+                        )
+                    } label: {
+                        Image(systemName: "clock")
+                        Text("Time")
+                        Spacer()
+                        Text(date, style: .time)
+                            .foregroundStyle(.secondary)
+                    }
+                    Picker("Repeat", selection: $selectedRepeatOption) {
+                        ForEach(RepeatOptions.allCases) { repeatOption in
+                            if repeatOption == .never {
+                                Text(repeatOption.rawValue.capitalized)
+                            } else {
+                                Text(repeatOption.rawValue.capitalized)
+                            }
+                        }
+                    }
+                }
+            }
+            #endif
             if !notificationsAllowed {
                 HStack {
                     Image(systemName: "info.circle")

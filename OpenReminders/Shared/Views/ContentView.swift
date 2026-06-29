@@ -28,6 +28,10 @@ struct ContentView: View {
     var withoutDate: [Reminder] { filter.withoutDate(reminders) }
     var completed: [Reminder] { filter.completed(reminders) }
     
+    private var hasSearchResults: Bool {
+        filteredSectionGroups.contains { !$0.remindersList.isEmpty }
+    }
+    
     private var sectionGroups: [RemindersSectionGroup] {
         [
             .init(title: "Pinned", remindersList: pinned, isExpandable: false),
@@ -44,7 +48,7 @@ struct ContentView: View {
         sectionGroups.map {
             RemindersSectionGroup(
                 title: $0.title,
-                remindersList: filteredReminders(remindersList: $0.remindersList),
+                remindersList: filteredReminders(searchText: searchText, remindersList: $0.remindersList),
                 isExpandable: $0.isExpandable
             )
         }
@@ -68,25 +72,9 @@ struct ContentView: View {
             .listStyle(.sidebar)
             .overlay {
                 if reminders.isEmpty {
-                    ContentUnavailableView {
-                        Label("No reminders yet", systemImage: "exclamationmark.circle.fill")
-                    } description: {
-                        Text("Add reminders and they will appear here")
-                    }
-                } else if !searchText.isEmpty &&
-                            filteredReminders(remindersList: pinned).isEmpty &&
-                            filteredReminders(remindersList: overdue).isEmpty &&
-                            filteredReminders(remindersList: today).isEmpty &&
-                            filteredReminders(remindersList: tomorrow).isEmpty &&
-                            filteredReminders(remindersList: upcoming).isEmpty &&
-                            filteredReminders(remindersList: withoutDate).isEmpty &&
-                            filteredReminders(remindersList: completed).isEmpty
-                {
-                    ContentUnavailableView {
-                        Label("No reminders found", systemImage: "magnifyingglass")
-                    } description: {
-                        Text("Try searching by note or title")
-                    }
+                    NoRemindersView()
+                } else if !searchText.isEmpty && !hasSearchResults {
+                    NoSearchResultsView()
                 }
             }
             .sheet(isPresented: $isShowingAddSheet) {
@@ -196,61 +184,12 @@ struct ContentView: View {
             print(error)
         }
     }
-    
-    // search reminders in through given reminders
-    func filteredReminders(remindersList: [Reminder]) -> [Reminder] {
-        guard !searchText.isEmpty else {return remindersList}
-        
-        return remindersList.filter {
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.note.localizedCaseInsensitiveContains(searchText)
-        }
-    }
 }
 
 private struct QuickDateChip: Identifiable {
     let id = UUID()
     let remindDate: Date
     var isSelected: Bool
-}
-
-private struct RemindersSectionGroup: Identifiable {
-    let id = UUID()
-    var title: String
-    var remindersList: [Reminder]
-    var isExpandable: Bool
-}
-
-private struct ReminderSection: View {
-    var sectionTitle: String
-    var remindersList: [Reminder]
-    var isExpandable: Bool
-    let onEdit: (Reminder) -> Void
-    
-    @State private var isExpanded: Bool = false
-    
-    var body: some View {
-        if !remindersList.isEmpty {
-            if isExpandable {
-                Section("\(sectionTitle) (\(remindersList.count))", isExpanded: $isExpanded) {
-                    handleReminder
-                }
-            } else {
-                Section("\(sectionTitle) (\(remindersList.count))") {
-                    handleReminder
-                }
-            }
-        }
-    }
-    
-    private var handleReminder: some View {
-        ForEach(remindersList) { reminder in
-            ReminderRow(
-                reminder: reminder,
-                onEdit: onEdit
-            )
-        }
-    }
 }
 
 #Preview {

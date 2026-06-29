@@ -66,7 +66,7 @@ struct ReminderRow: View {
                 }
             }
         }
-        #if os(iOS)
+        #if os(iOS) || os(watchOS)
         .swipeActions(edge: .leading) {
             pinButton
             .tint(.blue)
