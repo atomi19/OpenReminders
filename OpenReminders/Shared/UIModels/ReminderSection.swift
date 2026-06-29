@@ -14,6 +14,7 @@ struct ReminderSection: View {
     
     var body: some View {
         if !remindersList.isEmpty {
+            #if os(iOS) || os(macOS)
             if isExpandable {
                 Section("\(sectionTitle) (\(remindersList.count))", isExpanded: $isExpanded) {
                     handleReminder
@@ -23,6 +24,11 @@ struct ReminderSection: View {
                     handleReminder
                 }
             }
+            #elseif os(watchOS)
+            Section("\(sectionTitle) (\(remindersList.count))") {
+                handleReminder
+            }
+            #endif
         }
     }
     
